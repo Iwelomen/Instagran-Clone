@@ -8,6 +8,13 @@ class AuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<model.User> getUserDetails() async {
+    User currentUser = _auth.currentUser!;
+
+    DocumentSnapshot snap = await _firestore.collection('User').doc(currentUser.uid).get();
+    return model.User.fromSnap(snap);
+  }
+
   // sign up user
   Future<String> signUpUser({
     required String email,
@@ -32,28 +39,23 @@ class AuthMethods {
             .uploadImageToStorage('profilePics', file, false);
         // add user to database
 
-        // model.User user = model.User(
-        //   username: username,
-        //   uid: cred.user!.uid,
-        //   email: email,
-        //   bio: bio,
-        //   // following: [],
-        //   // followers: [],
-        //   photoUrl: photoUrl,
-        // // );
-        // await _firestore
-        //     .collection('User')
-        //     .doc(cred.user!.uid)
-        //     .set(user.toJson());
+        model.User user = model.User(
+          username: username,
+          uid: cred.user!.uid,
+          email: email,
+          bio: bio,
+          following: [],
+          followers: [],
+          photoUrl: photoUrl,
+        );
+        await _firestore
+            .collection('User')
+            .doc(cred.user!.uid)
+            .set(user.toJson());
 
-        // await _firestore.collection('User').add({
-        //   'username': username,
-        //   'uid': cred.user!.uid,
-        //   'email': email,
-        //   'bio': bio,
-        //   'following': [],
-        //   'followers': [],
-        // });
+        await _firestore.collection('User').add(
+              user.toJson(),
+            );
         res = 'success';
       }
     } catch (err) {
